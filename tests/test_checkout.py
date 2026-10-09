@@ -45,7 +45,11 @@ def test_empty_sku_is_rejected() -> None:
 
 def test_missing_line_key_is_rejected() -> None:
     """Spec 3, rule 3: every required key must be present."""
-    ...
+    incomplete = {"sku": "SKU-1", "qty": "1"}
+    reason = validate_order([incomplete])
+    assert reason is not None
+    assert reason != ""
+    assert calculate_order_total([incomplete]) is None
 
 
 def test_non_numeric_quantity_is_rejected() -> None:
