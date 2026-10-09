@@ -111,7 +111,11 @@ def test_unsupported_city_is_rejected() -> None:
 
 def test_valid_order_passes_validation() -> None:
     """Spec 3: a good order gets None back instead of a reason."""
-    ...
+    good = [
+        line(sku="SKU-1", qty="2", unit_price_kopecks="1500"),
+        line(sku="SKU-2", qty="1", unit_price_kopecks="999"),
+    ]
+    assert validate_order(good, promo_code="WELCOME10", shipping_city="msk") is None
 
 
 def test_no_discount_below_first_tier() -> None:
