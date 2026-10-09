@@ -30,6 +30,28 @@ def _is_whole_number(value: str) -> bool:
     return digits.isdigit()
 
 
+def _line_problem(line: dict[str, str]) -> str | None:
+    """Return the reason this order line is invalid, or None if it is fine.
+
+    The seven per-line rules live here: the ten rules of validation do not fit in
+    one function under the ruff C901 limit of 9.
+    """
+    for key in REQUIRED_LINE_KEYS:
+        if key not in line:
+            return f"line: missing key {key}"
+    if not line["sku"]:
+        return "line: sku must not be empty"
+    if not _is_whole_number(line["qty"]):
+        return "line: qty is not a whole number"
+    if int(line["qty"]) <= 0:
+        return "line: qty must be greater than zero"
+    if not _is_whole_number(line["unit_price_kopecks"]):
+        return "line: unit_price_kopecks is not a whole number"
+    if int(line["unit_price_kopecks"]) < 0:
+        return "line: unit_price_kopecks must not be negative"
+    return None
+
+
 def validate_order(
     lines: list[dict[str, str]],
     promo_code: str = "",
@@ -39,17 +61,9 @@ def validate_order(
     if not lines:
         return "order has no lines"
     for line in lines:
-        for key in REQUIRED_LINE_KEYS:
-            if key not in line:
-                return f"line: missing key {key}"
-        if not line["sku"]:
-            return "line: sku must not be empty"
-        if not _is_whole_number(line["qty"]):
-            return "line: qty is not a whole number"
-        if int(line["qty"]) <= 0:
-            return "line: qty must be greater than zero"
-        if not _is_whole_number(line["unit_price_kopecks"]):
-            return "line: unit_price_kopecks is not a whole number"
+        problem = _line_problem(line)
+        if problem is not None:
+            return problem
     return None
 
 
