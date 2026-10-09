@@ -26,6 +26,9 @@ def validate_order(
     if not lines:
         return "order has no lines"
     for line in lines:
+        for key in REQUIRED_LINE_KEYS:
+            if key not in line:
+                return f"line: missing key {key}"
         if not line["sku"]:
             return "line: sku must not be empty"
     return None
