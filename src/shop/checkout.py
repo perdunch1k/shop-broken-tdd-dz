@@ -89,6 +89,16 @@ def _tier_discount_percent(units: int) -> int:
     return best
 
 
+def _discount_percent(units: int, promo_code: str) -> int:
+    """The bigger of the tier percentage and the promo percentage.
+
+    The spec picks one of them, never their sum: a promo code that is
+    weaker than the tier must not shrink the discount further.
+    """
+    promo_percent = PROMO_CODES[promo_code] if promo_code else 0
+    return max(_tier_discount_percent(units), promo_percent)
+
+
 def calculate_order_total(
     lines: list[dict[str, str]],
     promo_code: str = "",
@@ -99,6 +109,6 @@ def calculate_order_total(
         return None
     subtotal = sum(int(item["qty"]) * int(item["unit_price_kopecks"]) for item in lines)
     units = sum(int(item["qty"]) for item in lines)
-    discount = percent_of(subtotal, _tier_discount_percent(units))
+    discount = percent_of(subtotal, _discount_percent(units, promo_code))
     base = subtotal - discount
     return base + percent_of(base, VAT_PERCENT)
