@@ -75,6 +75,20 @@ def validate_order(
     return None
 
 
+def _tier_discount_percent(units: int) -> int:
+    """Percentage of the highest tier whose threshold the order reaches.
+
+    Only one tier applies, so the tiers must not add up. Comparing percentages
+    rather than taking the last match keeps this correct whatever order
+    TIER_DISCOUNTS is written in.
+    """
+    best = 0
+    for threshold, percent in TIER_DISCOUNTS:
+        if units >= threshold and percent > best:
+            best = percent
+    return best
+
+
 def calculate_order_total(
     lines: list[dict[str, str]],
     promo_code: str = "",
@@ -84,5 +98,7 @@ def calculate_order_total(
     if validate_order(lines, promo_code, shipping_city) is not None:
         return None
     subtotal = sum(int(item["qty"]) * int(item["unit_price_kopecks"]) for item in lines)
-    base = subtotal
+    units = sum(int(item["qty"]) for item in lines)
+    discount = percent_of(subtotal, _tier_discount_percent(units))
+    base = subtotal - discount
     return base + percent_of(base, VAT_PERCENT)
