@@ -60,10 +60,14 @@ def validate_order(
     """Return a human readable reason why the order is invalid, or None if it is fine."""
     if not lines:
         return "order has no lines"
+    seen: list[str] = []
     for line in lines:
         problem = _line_problem(line)
         if problem is not None:
             return problem
+        if line["sku"] in seen:
+            return f"line: duplicate sku {line['sku']}"
+        seen.append(line["sku"])
     return None
 
 
