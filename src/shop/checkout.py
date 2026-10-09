@@ -25,6 +25,9 @@ def validate_order(
     """Return a human readable reason why the order is invalid, or None if it is fine."""
     if not lines:
         return "order has no lines"
+    for line in lines:
+        if not line["sku"]:
+            return "line: sku must not be empty"
     return None
 
 
