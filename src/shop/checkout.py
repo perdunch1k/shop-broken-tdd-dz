@@ -93,10 +93,11 @@ def _discount_percent(units: int, promo_code: str) -> int:
     """The bigger of the tier percentage and the promo percentage.
 
     The spec picks one of them, never their sum: a promo code that is
-    weaker than the tier must not shrink the discount further.
+    weaker than the tier must not shrink the discount further. The cap
+    applies to whichever percentage wins, so VIP35 pays 30%, not 35%.
     """
     promo_percent = PROMO_CODES[promo_code] if promo_code else 0
-    return max(_tier_discount_percent(units), promo_percent)
+    return min(max(_tier_discount_percent(units), promo_percent), MAX_DISCOUNT_PERCENT)
 
 
 def calculate_order_total(
