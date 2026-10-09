@@ -17,6 +17,19 @@ TIER_DISCOUNTS = ((10, 5), (25, 10), (50, 15))
 REQUIRED_LINE_KEYS = ("sku", "qty", "unit_price_kopecks")
 
 
+def _is_whole_number(value: str) -> bool:
+    """True when `int()` would parse `value`.
+
+    The project bans try/except, so the string is judged by shape instead of by
+    parsing it: optional sign, optional surrounding spaces, digits only. That is
+    what int() tolerates, and anything else must be rejected rather than crash.
+    """
+    text = value.strip()
+    sign = text[:1]
+    digits = text[1:] if sign in {"+", "-"} else text
+    return digits.isdigit()
+
+
 def validate_order(
     lines: list[dict[str, str]],
     promo_code: str = "",
@@ -31,6 +44,8 @@ def validate_order(
                 return f"line: missing key {key}"
         if not line["sku"]:
             return "line: sku must not be empty"
+        if not _is_whole_number(line["qty"]):
+            return "line: qty is not a whole number"
     return None
 
 
